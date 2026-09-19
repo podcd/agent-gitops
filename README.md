@@ -73,7 +73,7 @@ umask 077 && echo 'ANTHROPIC_API_KEY=sk-ant-...' >> ~/.config/podcd/agent.env
 #    values/common.yaml -> litellm.cloud.anthropic: true
 ```
 
-If you flip the switch without adding the key, litellm alone is held back and reported as failed.
+The switch is read by the templated `ExternalSecret` in `secrets/`, which asks for exactly the keys the enabled providers need, and by the proxy config, which lists their models. If you flip the switch without adding the key, litellm alone is held back and reported as failed.
 
 **Change a port, an image tag or a memory limit.** All of them are in
 `values/common.yaml`.
