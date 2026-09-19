@@ -67,6 +67,6 @@ monitoring:
     retention: 168h
   memoryLimit: 2Gi
 
-# Podman network the pods share. Created by bootstrap/bootstrap.sh;
-# podcd writes Network= into the units but does not create networks.
+# Podman network the pods share, declared in infrastructure/networks/ai.yaml
+# and created by podcd itself.
 network: ai

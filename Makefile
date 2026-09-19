@@ -17,7 +17,7 @@ get: ## list what this repository defines
 	podcd get all --repo .
 
 .PHONY: bootstrap
-bootstrap: ## create the network, seed agent.env, install and start the agent
+bootstrap: ## seed agent.env, pre-pull images, install and start the agent
 	./bootstrap/bootstrap.sh --host $(HOST)
 
 .PHONY: vscode

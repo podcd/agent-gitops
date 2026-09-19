@@ -1,0 +1,8 @@
+# The network every pod in this repository joins, so they resolve each other
+# by pod name. podcd creates it through a Quadlet .network unit before any
+# pod on it starts, and removes it once no pod on this host names it.
+apiVersion: gitops.podcd.io/v1
+kind: Network
+metadata:
+  name: ai
+spec: {}

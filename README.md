@@ -12,7 +12,7 @@ nothing here is configured by hand on the host, and a change is a commit.
 | `open-webui` | `127.0.0.1:3000` | Browser chat UI, pointed at both of the above |
 | `monitoring` | `127.0.0.1:3001` | Grafana over Prometheus and Loki: GPU, proxy traffic, container resources, logs |
 
-All of them run as rootless podman pods on a shared podman network named `ai`, so they resolve each other by pod name. Every port is bound to loopback; nothing is reachable from outside the machine.
+All of them run as rootless podman pods on a shared podman network named `ai`, so they resolve each other by pod name. The network is a `Network` document in Git like everything else: podcd creates it before the first pod that joins it and removes it after the last one leaves. Every port is bound to loopback; nothing is reachable from outside the machine.
 
 ## Requirements
 
@@ -23,7 +23,7 @@ All of them run as rootless podman pods on a shared podman network named `ai`, s
 ## Getting started
 
 ```bash
-make bootstrap    # create the network, seed agent.env, install and start the agent
+make bootstrap    # seed agent.env, pre-pull images, install and start the agent
 make status       # what the host is running, and when it last reconciled
 make endpoints    # the three URLs, and the proxy key
 ```

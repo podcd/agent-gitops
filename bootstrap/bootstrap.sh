@@ -18,14 +18,12 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REPO_URL="$REPO_ROOT"
 REVISION=""
 HOST_NAME="workstation"
-NETWORK="ai"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --repo-url)  REPO_URL="$2";  shift 2 ;;
     --revision)  REVISION="$2";  shift 2 ;;
     --host)      HOST_NAME="$2"; shift 2 ;;
-    --network)   NETWORK="$2";   shift 2 ;;
     *) echo "unknown flag: $1" >&2; exit 2 ;;
   esac
 done
@@ -36,13 +34,6 @@ fi
 
 command -v podcd >/dev/null || { echo "podcd not on PATH" >&2; exit 1; }
 command -v podman >/dev/null || { echo "podman not on PATH" >&2; exit 1; }
-
-# podcd writes Network= into the Quadlet units but does not create networks.
-# Without this the three pods cannot resolve each other by name.
-if ! podman network exists "$NETWORK" 2>/dev/null; then
-  echo "creating podman network $NETWORK"
-  podman network create "$NETWORK" >/dev/null
-fi
 
 # Services must survive logout, or the agent stops with the login session.
 if [[ "$(loginctl show-user "$USER" -p Linger --value 2>/dev/null)" != "yes" ]]; then
