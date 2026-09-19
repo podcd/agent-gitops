@@ -1,0 +1,43 @@
+# Logs: every line this user's systemd journal holds, which is where rootless
+# podman writes container output. The system journal is not readable by this
+# user and is simply skipped. Labels come from journal fields: the unit that
+# ran it and, for containers, the container name.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alloy-config
+data:
+  config.alloy: |
+    loki.source.journal "user" {
+      path          = "/var/log/journal"
+      max_age       = "24h"
+      labels        = { job = "journal" }
+      relabel_rules = loki.relabel.journal.rules
+      forward_to    = [loki.write.local.receiver]
+    }
+
+    loki.relabel "journal" {
+      forward_to = []
+      rule {
+        source_labels = ["__journal__systemd_user_unit"]
+        target_label  = "unit"
+      }
+      rule {
+        source_labels = ["__journal_container_name"]
+        target_label  = "container"
+      }
+      rule {
+        source_labels = ["__journal_syslog_identifier"]
+        target_label  = "identifier"
+      }
+      rule {
+        source_labels = ["__journal_priority_keyword"]
+        target_label  = "level"
+      }
+    }
+
+    loki.write "local" {
+      endpoint {
+        url = "http://localhost:3100/loki/api/v1/push"
+      }
+    }

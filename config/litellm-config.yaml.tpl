@@ -45,6 +45,11 @@ data:
     litellm_settings:
       # Local models reject sampling parameters the cloud ones accept.
       drop_params: true
+      # Requests, tokens, latency and spend per model on /metrics, scraped
+      # by the monitoring pod. Not gated behind the enterprise tier.
+      callbacks: ["prometheus"]
+      # /metrics is only reachable on the pod network, never on the host.
+      require_auth_for_metrics_endpoint: false
       # Per-request cost, latency and token counts in the proxy log; this
       # is what makes local-vs-cloud comparisons measurable.
       json_logs: true

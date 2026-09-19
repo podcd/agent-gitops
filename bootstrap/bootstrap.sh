@@ -50,6 +50,9 @@ if [[ "$(loginctl show-user "$USER" -p Linger --value 2>/dev/null)" != "yes" ]];
   sudo loginctl enable-linger "$USER"
 fi
 
+# The monitoring pod reads container metrics over the podman API socket.
+systemctl --user enable --now podman.socket >/dev/null
+
 ENV_FILE="$HOME/.config/podcd/agent.env"
 mkdir -p "$(dirname "$ENV_FILE")"
 touch "$ENV_FILE"

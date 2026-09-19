@@ -1,0 +1,8 @@
+# The role: a machine that watches itself.
+apiVersion: gitops.podcd.io/v1
+kind: Group
+metadata:
+  name: monitoring
+spec:
+  applications:
+    - monitoring

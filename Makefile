@@ -58,6 +58,8 @@ endpoints: ## what is listening, and how to reach it
 	@echo "ollama      http://127.0.0.1:11434"
 	@echo "litellm     http://127.0.0.1:4000/v1"
 	@echo "open-webui  http://127.0.0.1:3000"
+	@echo "grafana     http://127.0.0.1:3001/d/ai-stack"
+	@echo "prometheus  http://127.0.0.1:9090/targets"
 	@grep '^LITELLM_MASTER_KEY=' $$HOME/.config/podcd/agent.env 2>/dev/null || true
 
 .PHONY: teardown

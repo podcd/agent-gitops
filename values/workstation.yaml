@@ -5,6 +5,10 @@
 # under WSL2. Full GPU offload is the thing to protect: a handful of layers
 # spilling to CPU costs far more throughput than a smaller quant does.
 
+# The podman API socket lives under /run/user/<uid>; the monitoring pod
+# mounts it for container metrics. `id -u` on this host.
+hostUid: 1003
+
 ollama:
   # `tools` says whether the model's own chat template accepts function
   # definitions - `curl :11434/api/show -d '{"model":...}'` lists it under

@@ -5,6 +5,12 @@ images:
   ollama: docker.io/ollama/ollama:0.34.2
   openWebui: ghcr.io/open-webui/open-webui:main
   litellm: docker.io/litellm/litellm:v1.101.0
+  grafana: docker.io/grafana/grafana:12.4.11
+  prometheus: docker.io/prom/prometheus:v3.14.0
+  loki: docker.io/grafana/loki:3.7.8
+  alloy: docker.io/grafana/alloy:v1.19.2
+  gpuExporter: docker.io/utkuozdemir/nvidia_gpu_exporter:1.15.1
+  podmanExporter: quay.io/navidys/prometheus-podman-exporter:v2.0.0
 
 # How the GPU is handed to the ollama container.
 #   wsl - bind-mount /dev/dxg and /usr/lib/wsl/lib. Works on podman 4.9.3,
@@ -46,6 +52,21 @@ litellm:
     anthropic: false
     openai: false
 
-# Podman network the three pods share. Created by bootstrap/bootstrap.sh;
+# One pod: Grafana in front of Prometheus (metrics) and Loki (logs), fed by
+# Alloy reading the user journal, a GPU exporter, a podman exporter and
+# litellm's own /metrics. Only Grafana and Prometheus get host ports.
+monitoring:
+  grafana:
+    hostPort: 3001
+    # Single-user box bound to 127.0.0.1: no login, straight to Admin.
+    anonymousAdmin: true
+  prometheus:
+    hostPort: 9090
+    retention: 15d
+  loki:
+    retention: 168h
+  memoryLimit: 2Gi
+
+# Podman network the pods share. Created by bootstrap/bootstrap.sh;
 # podcd writes Network= into the units but does not create networks.
 network: ai
