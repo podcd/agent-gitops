@@ -1,0 +1,12 @@
+# Host-specific values for `workstation` (DESKTOP-MFTE856).
+# Wins over values/common.yaml, per key.
+#
+# RTX 3070, 8GB VRAM / 15GB host RAM under WSL2. Everything below is sized
+# for that. Full GPU offload is the thing to protect: a handful of layers
+# spilling to CPU costs far more throughput than a smaller quant does.
+
+ollama:
+  models:
+    - qwen2.5-coder:7b        # ~4.7GB at Q4_K_M, the daily driver
+    # - deepseek-coder:6.7b   # ~4GB, stronger fill-in-the-middle
+    # - qwen3-coder:7b        # newer tool-call formatting

@@ -1,0 +1,10 @@
+# The role: a machine that runs the local AI research stack.
+apiVersion: gitops.podcd.io/v1
+kind: Group
+metadata:
+  name: ai-research
+spec:
+  applications:
+    - ollama
+    - litellm
+    - open-webui

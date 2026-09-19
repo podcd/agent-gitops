@@ -1,0 +1,8 @@
+# Everything true of the local environment rather than of one machine.
+apiVersion: gitops.podcd.io/v1
+kind: Environment
+metadata:
+  name: local
+spec:
+  values:
+    - values/common.yaml

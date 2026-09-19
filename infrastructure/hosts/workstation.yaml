@@ -1,0 +1,12 @@
+# This machine. The name is pinned in agent.yaml via `--host workstation`
+# rather than taken from the hostname, because DESKTOP-MFTE856 is uppercase.
+apiVersion: gitops.podcd.io/v1
+kind: Host
+metadata:
+  name: workstation
+spec:
+  environment: local
+  groups:
+    - ai-research
+  values:
+    - values/workstation.yaml

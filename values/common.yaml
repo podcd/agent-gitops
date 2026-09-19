@@ -1,0 +1,49 @@
+# Values shared by every host in the local environment.
+# Referenced from infrastructure/environments/local.yaml.
+
+images:
+  ollama: docker.io/ollama/ollama:0.34.2
+  openWebui: ghcr.io/open-webui/open-webui:main
+  litellm: docker.io/litellm/litellm:v1.101.0
+
+# How the GPU is handed to the ollama container.
+#   wsl - bind-mount /dev/dxg and /usr/lib/wsl/lib. Works on podman 4.9.3,
+#         needs no host package. This is what WSL2 actually exposes.
+#   cdi - ask for nvidia.com/gpu=all through resources.limits. Needs
+#         nvidia-container-toolkit and a generated /etc/cdi spec; run
+#         bootstrap/nvidia-cdi.sh first, and podman new enough to honour it.
+#   none - CPU only.
+gpu:
+  mode: wsl
+
+ollama:
+  hostPort: 11434
+  # Pulled by the model-puller sidecar once the server answers.
+  models:
+    - qwen2.5-coder:7b
+  # Unload the model from VRAM after this long idle.
+  keepAlive: 30m
+  # 8GB VRAM: keep context small or layers spill to CPU.
+  contextLength: 8192
+  # Only one model resident at a time on an 8GB card.
+  maxLoadedModels: 1
+  memoryLimit: 8Gi
+
+openWebui:
+  hostPort: 3000
+  # Single-user box bound to 127.0.0.1. Set true to require a login.
+  auth: false
+  memoryLimit: 1Gi
+
+litellm:
+  hostPort: 4000
+  memoryLimit: 1Gi
+  # Cloud providers are off until the matching key is in agent.env.
+  # Enabling one adds it to the ExternalSecret AND to the proxy config.
+  cloud:
+    anthropic: false
+    openai: false
+
+# Podman network the three pods share. Created by bootstrap/bootstrap.sh;
+# podcd writes Network= into the units but does not create networks.
+network: ai
