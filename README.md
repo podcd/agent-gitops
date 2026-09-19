@@ -10,8 +10,9 @@ nothing here is configured by hand on the host, and a change is a commit.
 | `ollama` | `127.0.0.1:11434` | Local inference runtime, GPU-backed, with the model list pulled from Git |
 | `litellm` | `127.0.0.1:4000` | OpenAI-compatible proxy in front of both ollama and any cloud provider |
 | `open-webui` | `127.0.0.1:3000` | Browser chat UI, pointed at both of the above |
+| `monitoring` | `127.0.0.1:3001` | Grafana over Prometheus and Loki: GPU, proxy traffic, container resources, logs |
 
-All three run as rootless podman pods on a shared podman network named `ai`, so they resolve each other by pod name. Every port is bound to loopback; nothing is reachable from outside the machine.
+All of them run as rootless podman pods on a shared podman network named `ai`, so they resolve each other by pod name. Every port is bound to loopback; nothing is reachable from outside the machine.
 
 ## Requirements
 
@@ -110,6 +111,47 @@ This stack was sized for 8GB of VRAM, where roughly 6.9GB is actually available 
 
 A 7B-class model at this size is good at generating snippets, explaining code and answering questions. It will not reliably drive an agent's plan-execute-verify loop across multiple files.
 
+
+## Monitoring
+
+`http://127.0.0.1:3001/d/ai-stack` is one dashboard, provisioned from Git, with no
+login on this single-user box. Top row is the GPU (VRAM, utilisation, temperature and
+power), the middle is what goes through litellm (requests, tokens and latency per model,
+which is where a local-versus-cloud comparison becomes a number), then container memory
+and CPU, then logs.
+
+Everything lives in one pod, `monitoring`, sized at about 370MB resident in total:
+
+| Container | Role |
+|---|---|
+| grafana | The UI. Datasources and the dashboard are ConfigMaps, so the state on disk is only what you change in the browser |
+| prometheus | Metrics, 15 days by default |
+| loki | Logs, 7 days by default |
+| alloy | Reads this user's systemd journal, which is where rootless podman writes every container's output, and ships it to Loki |
+| gpu-exporter | `nvidia-smi` as metrics, through the same WSL mounts ollama uses |
+| podman-exporter | Per-container CPU and memory, over the podman API socket |
+
+Only Grafana and Prometheus get host ports; Prometheus at `:9090/targets` is the fastest
+way to see whether a scrape target is up. Retention and ports are in `values/common.yaml`
+under `monitoring`. `hostUid` in `values/workstation.yaml` locates the podman socket.
+
+Logs are labelled by `container` (the `pod-container` name podman assigns) and by
+`identifier` (the syslog identifier, `podcd` for the agent itself). The `job` label is
+not what Alloy's config would suggest: Loki keeps the component name there, so the
+dashboard selects on `container` and `identifier` instead.
+
+Three things here needed to be root inside their container, which rootless podman maps
+straight back to your user: Alloy, because the journal ACL grants read to that uid and
+nobody else; podman-exporter, because the socket is owned by it; and the three data
+stores, because the named volumes are created by it. The images' own unprivileged users
+would land in the subordinate uid range and be refused.
+
+Alloy keeps its journal cursor on a volume. Without that, every restart replayed the
+last day of journal and Loki refused each line as `entry too far behind`.
+
+To change the dashboard, edit it in Grafana, export the JSON, and paste it over
+`ai-stack.json` in `config/grafana-dashboards.yaml`. The provisioned copy is read-only
+in the UI on purpose: an edit that is not in Git is lost on the next pod restart.
 
 ## Using it from an editor
 
