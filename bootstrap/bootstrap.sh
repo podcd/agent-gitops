@@ -10,6 +10,9 @@
 # limitation.
 set -euo pipefail
 
+# The agent reconciles the host against a local Git repository.
+# This is by choice so podcd does not reconcile against the latest remote changes immediately.
+
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REPO_URL="$REPO_ROOT"
 REVISION=""
@@ -60,6 +63,21 @@ fi
 
 echo "pointing the agent at $REPO_URL ($REVISION) as host $HOST_NAME"
 podcd config create --host "$HOST_NAME" --repo-url "$REPO_URL" --revision "$REVISION"
+
+# podcd bounds any single podman or systemctl call, and a cold pull of a
+# multi-gigabyte image outruns that: the unit start is killed mid-copy and
+# the reconcile is recorded as failed. It recovers on retry, because the
+# blobs are already in local storage - but pulling them up front means the
+# first reconcile succeeds instead of the third. The list comes from the
+# compiled configuration, so it is whatever Git declares for this host.
+echo "pre-pulling images"
+podcd validate -o yaml \
+  | sed -n 's/^  - \(docker\.io\|ghcr\.io\|quay\.io\)/\1/p' \
+  | sort -u \
+  | while read -r image; do
+      podman image exists "$image" || podman pull "$image"
+    done
+
 podcd install
 
 systemctl --user daemon-reload

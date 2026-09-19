@@ -30,7 +30,12 @@ make status       # what the host is running, and when it last reconciled
 make endpoints    # the three URLs, and the proxy key
 ```
 
-`make bootstrap` points the agent at this checkout as a local Git remote. The agent
+`make bootstrap` pre-pulls every image the compiled configuration names, then points
+the agent at this checkout as a local Git remote. The pre-pull matters: podcd bounds
+any single podman call, and a cold pull of a multi-gigabyte image outruns that, so the
+unit start is killed mid-copy and the reconcile is recorded as failed. It recovers by
+itself on retry, since the blobs are already in local storage, but pulling up front
+means the first reconcile succeeds instead of the third. The agent
 reconciles the **committed** state, so an edit to the working tree changes nothing
 until you commit it. That is the GitOps contract rather than a limitation of the
 setup; to iterate faster, commit often, or run `make reconcile` after each commit
