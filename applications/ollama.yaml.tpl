@@ -68,10 +68,12 @@ spec:
                run bootstrap/nvidia-cdi.sh before switching to this mode. */}}
           "nvidia.com/gpu=all": 1
 {{- end }}
+      {{/* An exec probe, not httpGet: podman renders httpGet as a curl
+           healthcheck, and this image has no curl. `ollama list` is a
+           client call against the server in this container. */}}
       livenessProbe:
-        httpGet:
-          path: /api/version
-          port: 11434
+        exec:
+          command: ["/bin/ollama", "list"]
         periodSeconds: 30
         failureThreshold: 10
     {{/* Declarative model management: the list in values is the desired

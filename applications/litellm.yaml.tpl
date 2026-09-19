@@ -47,9 +47,13 @@ spec:
       resources:
         limits:
           memory: {{ default "1Gi" .Values.litellm.memoryLimit | quote }}
+      {{/* No curl in this image either, so the probe goes through the
+           interpreter the proxy itself runs on. */}}
       livenessProbe:
-        httpGet:
-          path: /health/liveliness
-          port: 4000
+        exec:
+          command:
+            - /app/.venv/bin/python3
+            - -c
+            - import urllib.request; urllib.request.urlopen("http://127.0.0.1:4000/health/liveliness", timeout=5)
         periodSeconds: 30
         failureThreshold: 10
