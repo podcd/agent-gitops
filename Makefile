@@ -9,8 +9,8 @@ lint: ## check every document without touching the host
 	podcd lint --host $(HOST) .
 
 .PHONY: validate
-validate: ## compile this repository for $(HOST) and print the result
-	podcd validate --host $(HOST) --repo .
+validate: ## compile what the agent sees for $(HOST) (needs `make bootstrap` first)
+	podcd validate --host $(HOST) -o yaml
 
 .PHONY: get
 get: ## list what this repository defines
@@ -42,8 +42,8 @@ logs: ## agent logs
 
 .PHONY: gpu-check
 gpu-check: ## prove the ollama container actually sees the GPU
-	podman exec ollama-ollama nvidia-smi -L || \
-	  echo "no GPU in the container - check values gpu.mode"
+	podman exec ollama-ollama /usr/lib/wsl/lib/nvidia-smi -L || \
+	  echo "no GPU in the container - check gpu.mode in values/common.yaml"
 
 .PHONY: models
 models: ## models currently resident

@@ -15,9 +15,12 @@ spec:
       persistentVolumeClaim:
         claimName: ollama-models
 {{- if eq .Values.gpu.mode "wsl" }}
-    - name: wsl-lib
+    {{/* The whole tree, not just lib/: libnvidia-ml.so.1 reaches through
+         libdxcore into the Windows driver store under drivers/, and
+         nvidia-smi reports "Driver Not Loaded" without it. */}}
+    - name: wsl
       hostPath:
-        path: /usr/lib/wsl/lib
+        path: /usr/lib/wsl
         type: Directory
     - name: dxg
       hostPath:
@@ -51,8 +54,8 @@ spec:
         - name: models
           mountPath: /models
 {{- if eq .Values.gpu.mode "wsl" }}
-        - name: wsl-lib
-          mountPath: /usr/lib/wsl/lib
+        - name: wsl
+          mountPath: /usr/lib/wsl
           readOnly: true
         - name: dxg
           mountPath: /dev/dxg
