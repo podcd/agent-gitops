@@ -1,6 +1,3 @@
-{{/* One OpenAI-compatible endpoint in front of both ollama and any cloud
-     provider, so Cline and Open WebUI are pointed at a single base URL and
-     the model choice becomes a routing decision in Git. */}}
 apiVersion: v1
 kind: Pod
 metadata:

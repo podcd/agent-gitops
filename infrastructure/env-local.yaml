@@ -5,4 +5,4 @@ metadata:
   name: local
 spec:
   values:
-    - values/common.yaml
+    - values/values-common.yaml

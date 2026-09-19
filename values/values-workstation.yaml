@@ -1,5 +1,5 @@
 # Host-specific values for `workstation` (DESKTOP-MFTE856).
-# Wins over values/common.yaml, per key.
+# Wins over values/values-common.yaml, per key.
 #
 # RTX 3070, 8GB VRAM of which ~6.9GB reaches a container, 15GB host RAM
 # under WSL2. Full GPU offload is the thing to protect: a handful of layers

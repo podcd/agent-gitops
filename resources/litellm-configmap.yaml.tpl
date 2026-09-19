@@ -1,7 +1,3 @@
-{{/* The proxy's own config file, carried as a ConfigMap so a model-routing
-     change is a Git commit and not an edit inside a running container.
-     Local models are generated from the same values list ollama pulls
-     from, so the two cannot drift apart. */}}
 apiVersion: v1
 kind: ConfigMap
 metadata:

@@ -1,9 +1,3 @@
-{{/* One pod, six containers, all on localhost to each other. Grafana is the
-     only thing meant to be looked at; Prometheus gets a host port too since
-     its query page is the quickest way to check a scrape target. Every
-     container that touches something owned by this user on the host - the
-     journal, the podman socket, the named volumes - runs as root inside
-     the container, which rootless podman maps back to this user. */}}
 apiVersion: v1
 kind: Pod
 metadata:

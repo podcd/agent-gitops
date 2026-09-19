@@ -9,4 +9,4 @@ spec:
     - ai-research
     - monitoring
   values:
-    - values/workstation.yaml
+    - values/values-workstation.yaml

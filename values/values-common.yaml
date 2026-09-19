@@ -25,7 +25,7 @@ gpu:
 ollama:
   hostPort: 11434
   # Pulled by the model-puller sidecar once the server answers. `tools`
-  # picks the litellm route; see values/workstation.yaml for the rule.
+  # picks the litellm route; see values/values-workstation.yaml for the rule.
   models:
     - name: qwen2.5-coder:7b
       tools: true

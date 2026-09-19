@@ -1,7 +1,4 @@
-# Provider and dashboards in one ConfigMap, mounted where Grafana already
-# looks. The provider reads only *.json from its path, so the yaml beside it
-# is ignored. Edit the dashboard in Grafana, export JSON, paste it here: the
-# next reconcile carries it. Anything not committed is lost on restart.
+# Edit the dashboard in Grafana, export JSON, paste it here: the next reconcile carries it. Anything not committed is lost on restart.
 apiVersion: v1
 kind: ConfigMap
 metadata:

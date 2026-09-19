@@ -1,6 +1,3 @@
-{{/* Browser chat UI. Talks to ollama directly for model management, and to
-     litellm for everything else, so the same model list shows up whether a
-     model is local or cloud. */}}
 apiVersion: v1
 kind: Pod
 metadata:

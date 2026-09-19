@@ -47,7 +47,7 @@ logs: ## agent logs
 .PHONY: gpu-check
 gpu-check: ## prove the ollama container actually sees the GPU
 	podman exec ollama-ollama /usr/lib/wsl/lib/nvidia-smi -L || \
-	  echo "no GPU in the container - check gpu.mode in values/common.yaml"
+	  echo "no GPU in the container - check gpu.mode in values/values-common.yaml"
 
 .PHONY: models
 models: ## models currently resident

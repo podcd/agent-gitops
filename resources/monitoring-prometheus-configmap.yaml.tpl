@@ -1,6 +1,3 @@
-{{/* Scrape targets. Everything but litellm lives in the monitoring pod
-     itself, so it is reached over localhost; litellm is a pod name on the
-     shared network. */}}
 apiVersion: v1
 kind: ConfigMap
 metadata:

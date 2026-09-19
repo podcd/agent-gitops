@@ -1,5 +1,4 @@
-{{/* Single-binary Loki on the filesystem. No object store, no
-     microservices, one retention knob. */}}
+{{/* Single-binary Loki on the filesystem. No object store. */}}
 apiVersion: v1
 kind: ConfigMap
 metadata:

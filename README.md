@@ -1,7 +1,6 @@
 # agent-gitops
 
-A local AI research stack, declared as [podcd](https://podcd.github.io/podcd/) documents and reconciled onto this workstation by the podcd agent. Git is the desired state:
-nothing here is configured by hand on the host, and a change is a commit.
+A local AI workbench, declared as [podcd](https://podcd.github.io/podcd/) documents and reconciled onto this workstation by the podcd agent.
 
 ## What it deploys
 
@@ -17,7 +16,7 @@ All of them run as rootless podman pods on a shared podman network named `ai`, s
 ## Requirements
 
 - Linux with rootless podman, cgroups v2, and `subuid`/`subgid` ranges for your user
-- `podcd` on `PATH` (this repository was built against v4.1.1)
+- `podcd` (>=4.1.2)
 - An NVIDIA GPU, if you want the models on the GPU rather than the CPU
 
 ## Getting started
@@ -28,8 +27,9 @@ make status       # what the host is running, and when it last reconciled
 make endpoints    # the three URLs, and the proxy key
 ```
 
-`make bootstrap` pre-pulls every image the compiled configuration names, then points the agent at this checkout as a local Git remote. The agent reconciles the **committed** state, so an edit to the working tree changes nothing
-until you commit it. Run `make reconcile` after each commit instead of waiting for the one-minute loop.
+`make bootstrap` pre-pulls every image the compiled configuration names, then points the agent at this checkout as a local Git remote. The agent reconciles the **committed** state, so an edit to the working tree changes nothing until you commit it.
+
+Run `make reconcile` after each commit instead of waiting for the one-minute loop.
 
 To reconcile from a real remote instead, push this repository somewhere and re-run
 `./bootstrap/bootstrap.sh --repo-url git@github.com:you/agent-gitops.git`.
@@ -44,24 +44,15 @@ values/           The knobs: image tags, ports, model list, GPU mode
 bootstrap/        Host preparation the agent cannot do for itself
 ```
 
-Values are layered. `values/common.yaml` holds values for the local environment; `values/workstation.yaml` overrides it per key for this machine.
+Values are layered. `values/values-common.yaml` holds values for the local environment; `values/values-workstation.yaml` overrides it per key for this machine.
 
 ## Changing things
 
-**Add or remove a model.** Edit `ollama.models` in `values/workstation.yaml` and
-commit. Each entry names the model and says whether its chat template accepts tool
-definitions (`curl :11434/api/show -d '{"model":"..."}'` lists `tools` under
-`capabilities`). That flag picks the litellm route: native pass-through for models
-that support tools, JSON-mode emulation for those that do not. Without it, ollama
-rejects any request carrying tools with `does not support tools`, which is every
-request an agent like Cline makes. Emulation works, but it is markedly less reliable
-than native, and an agent that issues a tool call every turn will stumble on it. The model-puller sidecar pulls anything new the next time it starts, and
-the same list generates litellm's local model entries, so the proxy and the runtime
-cannot drift apart.
+**Add or remove a model.** Edit `ollama.models` in `values/values-workstation.yaml` and commit.
 
-Note that removing a model from the list stops advertising it through litellm, but
-does not delete the weights from the `ollama-models` volume. Reclaim that space with
-`podman exec ollama-ollama ollama rm <model>`.
+Each entry has the model `name:` and the  bool `tools:` indicating whether its chat template accepts tool definitions (`curl :11434/api/show -d '{"model":"..."}'` lists `tools` under `capabilities`).
+
+Note that removing a model from the list stops advertising it through litellm, but does not delete the weights from the `ollama-models` volume. Reclaim that space with `podman exec ollama-ollama ollama rm <model>`.
 
 **Enable a cloud provider.** Two steps, both required:
 
@@ -69,17 +60,16 @@ does not delete the weights from the `ollama-models` volume. Reclaim that space 
 # 1. the key, on the host, never in Git
 umask 077 && echo 'ANTHROPIC_API_KEY=sk-ant-...' >> ~/.config/podcd/agent.env
 # 2. the switch, in Git
-#    values/common.yaml -> litellm.cloud.anthropic: true
+#    values/values-common.yaml -> litellm.cloud.anthropic: true
 ```
 
 The switch is read by the templated `ExternalSecret` in `secrets/`, which asks for exactly the keys the enabled providers need, and by the proxy config, which lists their models. If you flip the switch without adding the key, litellm alone is held back and reported as failed.
 
-**Change a port, an image tag or a memory limit.** All of them are in
-`values/common.yaml`.
+**Change a port, an image tag or a memory limit.** All of them are in `values/values-common.yaml`.
 
 ## GPU
 
-`gpu.mode` in `values/common.yaml` selects how the GPU reaches the container.
+`gpu.mode` in `values/values-common.yaml` selects how the GPU reaches the container.
 
 `wsl` (the default) bind-mounts `/dev/dxg` and the whole of `/usr/lib/wsl`, `libnvidia-ml.so.1` reaches through `libdxcore` into the Windows driver store under `/usr/lib/wsl/drivers`, and mounting only `/usr/lib/wsl/lib` gets you `NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver`.
 
@@ -110,16 +100,9 @@ This stack was sized for 8GB of VRAM, where roughly 6.9GB is actually available 
 
 A 7B-class model at this size is good at generating snippets, explaining code and answering questions. It will not reliably drive an agent's plan-execute-verify loop across multiple files.
 
-
 ## Monitoring
 
-`http://127.0.0.1:3001/d/ai-stack` is one dashboard, provisioned from Git, with no
-login on this single-user box. Top row is the GPU (VRAM, utilisation, temperature and
-power), the middle is what goes through litellm (requests, tokens and latency per model,
-which is where a local-versus-cloud comparison becomes a number), then container memory
-and CPU, then logs.
-
-Everything lives in one pod, `monitoring`, sized at about 370MB resident in total:
+The monitoring containers are deployed over the pod `monitoring`.
 
 | Container | Role |
 |---|---|
@@ -130,27 +113,12 @@ Everything lives in one pod, `monitoring`, sized at about 370MB resident in tota
 | gpu-exporter | `nvidia-smi` as metrics, through the same WSL mounts ollama uses |
 | podman-exporter | Per-container CPU and memory, over the podman API socket |
 
-Only Grafana and Prometheus get host ports; Prometheus at `:9090/targets` is the fastest
-way to see whether a scrape target is up. Retention and ports are in `values/common.yaml`
-under `monitoring`. `hostUid` in `values/workstation.yaml` locates the podman socket.
+Grafana and Prometheus get host ports.
 
-Logs are labelled by `container` (the `pod-container` name podman assigns) and by
-`identifier` (the syslog identifier, `podcd` for the agent itself). The `job` label is
-not what Alloy's config would suggest: Loki keeps the component name there, so the
-dashboard selects on `container` and `identifier` instead.
+* Logs are labelled by `container` (the `pod-container` name podman assigns) and by `identifier` (the syslog identifier, `podcd` for the agent itself).
+* The `job` label is not what Alloy's config would suggest: Loki keeps the component name there, so the dashboard selects on `container` and `identifier` instead.
 
-Three things here needed to be root inside their container, which rootless podman maps
-straight back to your user: Alloy, because the journal ACL grants read to that uid and
-nobody else; podman-exporter, because the socket is owned by it; and the three data
-stores, because the named volumes are created by it. The images' own unprivileged users
-would land in the subordinate uid range and be refused.
-
-Alloy keeps its journal cursor on a volume. Without that, every restart replayed the
-last day of journal and Loki refused each line as `entry too far behind`.
-
-To change the dashboard, edit it in Grafana, export the JSON, and paste it over
-`ai-stack.json` in `config/grafana-dashboards.yaml`. The provisioned copy is read-only
-in the UI on purpose: an edit that is not in Git is lost on the next pod restart.
+To change the dashboard, edit it in Grafana, export the JSON, and paste it over `ai-stack.json` in `config/grafana-dashboards.yaml`. The provisioned copy is read-only in the UI on purpose: an edit that is not in Git is lost on the next pod restart.
 
 ## Using it from an editor
 

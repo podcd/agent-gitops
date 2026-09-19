@@ -1,7 +1,4 @@
-{{/* One Secret for the proxy, holding exactly the keys the enabled providers
-     need. A key named here but missing from agent.env holds litellm back
-     and leaves the other workloads alone, so enabling a provider and adding
-     its key are one change, not two. */}}
+{{/* Make sure the agent.env file has the Key=Value pairs (default: ~/.config/podcd/agent.env) */}}
 apiVersion: external-secrets.io/v1beta1
 kind: ExternalSecret
 metadata:

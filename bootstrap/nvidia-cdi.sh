@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Only needed to switch values/common.yaml to `gpu.mode: cdi`.
+# Only needed to switch values/values-common.yaml to `gpu.mode: cdi`.
 #
 # The default `wsl` mode bind-mounts /dev/dxg and /usr/lib/wsl/lib and needs
 # none of this. CDI is the portable way to ask for a GPU, and worth having

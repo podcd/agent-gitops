@@ -1,6 +1,3 @@
-{{/* The local inference runtime. Serves an OpenAI-compatible API on
-     11434 and holds the model weights in a podman named volume, so a pod
-     restart does not re-download several GB. */}}
 apiVersion: v1
 kind: Pod
 metadata:
