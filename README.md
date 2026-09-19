@@ -49,7 +49,13 @@ Values are layered. `values/common.yaml` holds values for the local environment;
 ## Changing things
 
 **Add or remove a model.** Edit `ollama.models` in `values/workstation.yaml` and
-commit. The model-puller sidecar pulls anything new the next time it starts, and
+commit. Each entry names the model and says whether its chat template accepts tool
+definitions (`curl :11434/api/show -d '{"model":"..."}'` lists `tools` under
+`capabilities`). That flag picks the litellm route: native pass-through for models
+that support tools, JSON-mode emulation for those that do not. Without it, ollama
+rejects any request carrying tools with `does not support tools`, which is every
+request an agent like Cline makes. Emulation works, but it is markedly less reliable
+than native, and an agent that issues a tool call every turn will stumble on it. The model-puller sidecar pulls anything new the next time it starts, and
 the same list generates litellm's local model entries, so the proxy and the runtime
 cannot drift apart.
 

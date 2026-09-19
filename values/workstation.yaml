@@ -6,14 +6,27 @@
 # spilling to CPU costs far more throughput than a smaller quant does.
 
 ollama:
+  # `tools` says whether the model's own chat template accepts function
+  # definitions - `curl :11434/api/show -d '{"model":...}'` lists it under
+  # capabilities. It decides which litellm route the model gets:
+  #   true  -> ollama_chat/ : tools passed through natively
+  #   false -> ollama/      : litellm emulates tool calls with JSON mode,
+  #                           since ollama rejects the request outright
+  #                           ("does not support tools") otherwise
+  # Emulated tool calling is markedly less reliable than native. An agent
+  # that issues a tool call every turn, like Cline, will stumble on it.
   models:
-    - qwen2.5-coder:7b        # ~4.7GB at Q4_K_M, fits entirely on the card
-    - deepseek-coder-v2:16b   # the model under test, see below
-    # - deepseek-coder:6.7b   # ~3.8GB, full offload, weaker than V2
-    # - deepseek-r1:8b        # ~5.2GB, reasoning-distilled rather than code
+    - name: qwen2.5-coder:7b        # ~4.7GB at Q4_K_M, fits entirely on the card
+      tools: true
+    - name: deepseek-coder-v2:16b   # the model under test, see below
+      tools: false
+    # - name: deepseek-coder:6.7b   # ~3.8GB, full offload, weaker than V2, no tools
+    #   tools: false
+    # - name: deepseek-r1:8b        # ~5.2GB, reasoning-distilled rather than code
+    #   tools: true
 
   # deepseek-coder-v2:16b is ~8.9GB at Q4 against ~6.9GB of usable VRAM, so
-  # roughly 2GB of layers run on the CPU and it is markedly slower than
+  # a good part of it runs on the CPU and it is markedly slower than
   # qwen2.5-coder:7b. That is the cost of testing the strongest DeepSeek
   # this card can hold at all; the 6.7b variant above fits entirely if
   # throughput matters more than capability.

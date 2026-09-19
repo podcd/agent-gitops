@@ -90,8 +90,8 @@ spec:
           set -eu
           until /bin/ollama list >/dev/null 2>&1; do sleep 2; done
 {{- range .Values.ollama.models }}
-          echo "pulling {{ . }}"
-          /bin/ollama pull {{ . | quote }}
+          echo "pulling {{ .name }}"
+          /bin/ollama pull {{ .name | quote }}
 {{- end }}
           echo "models ready"
           exec sleep infinity

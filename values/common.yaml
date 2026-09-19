@@ -18,9 +18,11 @@ gpu:
 
 ollama:
   hostPort: 11434
-  # Pulled by the model-puller sidecar once the server answers.
+  # Pulled by the model-puller sidecar once the server answers. `tools`
+  # picks the litellm route; see values/workstation.yaml for the rule.
   models:
-    - qwen2.5-coder:7b
+    - name: qwen2.5-coder:7b
+      tools: true
   # Unload the model from VRAM after this long idle.
   keepAlive: 30m
   # 8GB VRAM: keep context small or layers spill to CPU.

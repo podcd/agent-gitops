@@ -10,9 +10,16 @@ data:
   config.yaml: |
     model_list:
 {{- range .Values.ollama.models }}
-      - model_name: local/{{ replace ":" "-" . }}
+      - model_name: local/{{ replace ":" "-" .name }}
         litellm_params:
-          model: ollama_chat/{{ . }}
+          {{- if .tools }}
+          model: ollama_chat/{{ .name }}
+          {{- else }}
+          {{/* /api/generate route: litellm reads the model template, sees
+               no tools support, and emulates function calling through JSON
+               mode instead of forwarding `tools` for ollama to reject. */}}
+          model: ollama/{{ .name }}
+          {{- end }}
           api_base: http://ollama:11434
 {{- end }}
 {{- if .Values.litellm.cloud.anthropic }}
