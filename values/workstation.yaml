@@ -1,12 +1,23 @@
 # Host-specific values for `workstation` (DESKTOP-MFTE856).
 # Wins over values/common.yaml, per key.
 #
-# RTX 3070, 8GB VRAM / 15GB host RAM under WSL2. Everything below is sized
-# for that. Full GPU offload is the thing to protect: a handful of layers
+# RTX 3070, 8GB VRAM of which ~6.9GB reaches a container, 15GB host RAM
+# under WSL2. Full GPU offload is the thing to protect: a handful of layers
 # spilling to CPU costs far more throughput than a smaller quant does.
 
 ollama:
   models:
-    - qwen2.5-coder:7b        # ~4.7GB at Q4_K_M, the daily driver
-    # - deepseek-coder:6.7b   # ~4GB, stronger fill-in-the-middle
-    # - qwen3-coder:7b        # newer tool-call formatting
+    - qwen2.5-coder:7b        # ~4.7GB at Q4_K_M, fits entirely on the card
+    - deepseek-coder-v2:16b   # the model under test, see below
+    # - deepseek-coder:6.7b   # ~3.8GB, full offload, weaker than V2
+    # - deepseek-r1:8b        # ~5.2GB, reasoning-distilled rather than code
+
+  # deepseek-coder-v2:16b is ~8.9GB at Q4 against ~6.9GB of usable VRAM, so
+  # roughly 2GB of layers run on the CPU and it is markedly slower than
+  # qwen2.5-coder:7b. That is the cost of testing the strongest DeepSeek
+  # this card can hold at all; the 6.7b variant above fits entirely if
+  # throughput matters more than capability.
+  #
+  # The CPU-resident layers come out of the container's memory limit, not
+  # the card, so 8Gi is no longer enough to avoid an OOM kill.
+  memoryLimit: 12Gi

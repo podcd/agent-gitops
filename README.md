@@ -130,6 +130,17 @@ answering questions. It will not reliably drive an agent's plan-execute-verify l
 across multiple files; that is what the cloud models behind litellm are for. Both are
 reachable at the same endpoint, which is the point of putting the proxy in front.
 
+`deepseek-coder-v2:16b` is deliberately an exception to the first rule. At ~8.9GB it
+does not fit, so roughly 2GB of layers run on the CPU and it is markedly slower than
+the models that do. It is in the list as the model under test, not as a daily driver.
+Those CPU-resident layers come out of the container's memory limit rather than the
+card, which is why `ollama.memoryLimit` is 12Gi rather than 8Gi.
+
+Note that DeepSeek's current frontier model, V4.1-Flash, cannot run here at all: the
+MoE activates 8B parameters per token but all 552B have to be resident, which is
+roughly 280GB at Q4. Reaching it means adding DeepSeek as a cloud provider behind
+litellm, the same way as Anthropic or OpenAI.
+
 ## Using it from an editor
 
 ```bash
