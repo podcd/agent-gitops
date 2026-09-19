@@ -32,6 +32,14 @@ spec:
       envFrom:
         - secretRef:
             name: litellm-keys
+{{- if .Values.litellm.cloud.anthropic }}
+        - secretRef:
+            name: litellm-anthropic
+{{- end }}
+{{- if .Values.litellm.cloud.openai }}
+        - secretRef:
+            name: litellm-openai
+{{- end }}
       volumeMounts:
         - name: config
           mountPath: /etc/litellm

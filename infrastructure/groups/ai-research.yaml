@@ -1,4 +1,3 @@
-# The role: a machine that runs the local AI research stack.
 apiVersion: gitops.podcd.io/v1
 kind: Group
 metadata:
