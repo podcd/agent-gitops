@@ -20,6 +20,10 @@ get: ## list what this repository defines
 bootstrap: ## create the network, seed agent.env, install and start the agent
 	./bootstrap/bootstrap.sh --host $(HOST)
 
+.PHONY: vscode
+vscode: ## install the Cline extension and print how to point it at litellm
+	./bootstrap/vscode.sh
+
 .PHONY: plan
 plan: ## what the agent would change
 	podcd plan

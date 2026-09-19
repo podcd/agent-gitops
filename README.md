@@ -127,6 +127,15 @@ reachable at the same endpoint, which is the point of putting the proxy in front
 
 ## Using it from an editor
 
+```bash
+make vscode       # install the Cline extension, and print the settings below
+```
+
+Cline is the agentic VS Code extension this stack is built for: open source, actively
+maintained, and able to take an arbitrary OpenAI-compatible base URL. Its extension
+state lives in the editor rather than in a file this repository can own, so the three
+values below are entered once by hand.
+
 Point any OpenAI-compatible client at the proxy, so switching between a local and a
 cloud model is a model name rather than a reconfiguration:
 
