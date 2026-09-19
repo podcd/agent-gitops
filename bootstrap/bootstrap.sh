@@ -10,8 +10,9 @@
 # limitation.
 set -euo pipefail
 
-# The agent reconciles the host against a local Git repository.
+#! The agent reconciles the host against a local Git repository.
 # This is by choice so podcd does not reconcile against the latest remote changes immediately.
+# i.e. git pull will fetch and then trigger a reconcile because the local repository has changed.
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REPO_URL="$REPO_ROOT"

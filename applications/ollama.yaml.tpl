@@ -74,6 +74,7 @@ spec:
       livenessProbe:
         exec:
           command: ["/bin/ollama", "list"]
+        timeoutSeconds: 10
         periodSeconds: 30
         failureThreshold: 10
     {{/* Declarative model management: the list in values is the desired
