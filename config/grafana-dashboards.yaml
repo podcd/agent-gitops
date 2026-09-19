@@ -180,8 +180,8 @@ data:
           "targets": [
             {
               "refId": "A",
-              "expr": "sum by (model) (rate(litellm_proxy_total_requests_metric_total[5m]))",
-              "legendFormat": "{{model}}",
+              "expr": "sum by (requested_model) (rate(litellm_requests_metric_total[5m]))",
+              "legendFormat": "{{requested_model}}",
               "datasource": {
                 "type": "prometheus",
                 "uid": "prometheus"
@@ -212,8 +212,8 @@ data:
           "targets": [
             {
               "refId": "A",
-              "expr": "sum by (model) (rate(litellm_input_tokens_metric_total[5m]))",
-              "legendFormat": "in {{model}}",
+              "expr": "sum by (requested_model) (rate(litellm_input_tokens_metric_total[5m]))",
+              "legendFormat": "in {{requested_model}}",
               "datasource": {
                 "type": "prometheus",
                 "uid": "prometheus"
@@ -221,8 +221,8 @@ data:
             },
             {
               "refId": "B",
-              "expr": "sum by (model) (rate(litellm_output_tokens_metric_total[5m]))",
-              "legendFormat": "out {{model}}",
+              "expr": "sum by (requested_model) (rate(litellm_output_tokens_metric_total[5m]))",
+              "legendFormat": "out {{requested_model}}",
               "datasource": {
                 "type": "prometheus",
                 "uid": "prometheus"
@@ -251,8 +251,8 @@ data:
           "targets": [
             {
               "refId": "A",
-              "expr": "histogram_quantile(0.5, sum by (le, model) (rate(litellm_request_total_latency_metric_bucket[5m])))",
-              "legendFormat": "p50 {{model}}",
+              "expr": "histogram_quantile(0.5, sum by (le, requested_model) (rate(litellm_request_total_latency_metric_bucket[5m])))",
+              "legendFormat": "p50 {{requested_model}}",
               "datasource": {
                 "type": "prometheus",
                 "uid": "prometheus"
@@ -260,8 +260,8 @@ data:
             },
             {
               "refId": "B",
-              "expr": "histogram_quantile(0.95, sum by (le, model) (rate(litellm_request_total_latency_metric_bucket[5m])))",
-              "legendFormat": "p95 {{model}}",
+              "expr": "histogram_quantile(0.95, sum by (le, requested_model) (rate(litellm_request_total_latency_metric_bucket[5m])))",
+              "legendFormat": "p95 {{requested_model}}",
               "datasource": {
                 "type": "prometheus",
                 "uid": "prometheus"
@@ -292,7 +292,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "expr": "podman_container_mem_usage_bytes * on (id) group_left (name) podman_container_info",
+              "expr": "podman_container_mem_usage_bytes * on (id) group_left (name) podman_container_info{name!~\".*-(service|infra)\"}",
               "legendFormat": "{{name}}",
               "datasource": {
                 "type": "prometheus",
@@ -324,7 +324,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "expr": "rate(podman_container_cpu_seconds_total[2m]) * on (id) group_left (name) podman_container_info",
+              "expr": "rate(podman_container_cpu_seconds_total[2m]) * on (id) group_left (name) podman_container_info{name!~\".*-(service|infra)\"}",
               "legendFormat": "{{name}}",
               "datasource": {
                 "type": "prometheus",
@@ -356,7 +356,16 @@ data:
           "targets": [
             {
               "refId": "A",
-              "expr": "{job=\"journal\", unit=~\"podcd-.*\"}",
+              "expr": "{job=\"journal\", container=~\".+\"}",
+              "legendFormat": "",
+              "datasource": {
+                "type": "loki",
+                "uid": "loki"
+              }
+            },
+            {
+              "refId": "B",
+              "expr": "{job=\"journal\", identifier=\"podcd\"}",
               "legendFormat": "",
               "datasource": {
                 "type": "loki",
