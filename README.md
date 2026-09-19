@@ -37,8 +37,7 @@ To reconcile from a real remote instead, push this repository somewhere and re-r
 ## Layout
 
 ```
-applications/     Pod templates: what each workload is
-config/           The litellm proxy config, carried as a ConfigMap
+resources/        Pods, ConfigMaps, ExternalSecrets/SecretStore templates
 infrastructure/   Environment, Group and Host: which workloads run here
 secrets/          Where secrets come from, never the secrets themselves
 values/           The knobs: image tags, ports, model list, GPU mode
