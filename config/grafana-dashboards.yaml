@@ -356,7 +356,7 @@ data:
           "targets": [
             {
               "refId": "A",
-              "expr": "{job=\"journal\", container=~\".+\"}",
+              "expr": "{container=~\".+\"}",
               "legendFormat": "",
               "datasource": {
                 "type": "loki",
@@ -365,7 +365,7 @@ data:
             },
             {
               "refId": "B",
-              "expr": "{job=\"journal\", identifier=\"podcd\"}",
+              "expr": "{identifier=\"podcd\"}",
               "legendFormat": "",
               "datasource": {
                 "type": "loki",

@@ -23,6 +23,12 @@ spec:
     - name: loki-data
       persistentVolumeClaim:
         claimName: loki-data
+    {{/* Alloy's journal cursor. Without it a restart replays the last
+         max_age of journal, and Loki refuses every line older than what
+         it already holds for that stream: "entry too far behind". */}}
+    - name: alloy-data
+      persistentVolumeClaim:
+        claimName: alloy-data
     - name: grafana-datasources
       configMap:
         name: grafana-datasources
@@ -151,10 +157,12 @@ spec:
         runAsUser: 0
       args:
         - run
-        - --storage.path=/tmp/alloy
+        - --storage.path=/var/lib/alloy
         - --server.http.listen-addr=127.0.0.1:12345
         - /etc/alloy/config.alloy
       volumeMounts:
+        - name: alloy-data
+          mountPath: /var/lib/alloy
         - name: alloy-config
           mountPath: /etc/alloy
           readOnly: true
